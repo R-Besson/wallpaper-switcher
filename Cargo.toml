@@ -15,3 +15,5 @@ tokio = { version = "1.49.0", features = ["full"] }
 wallpaper = "3.2.0"
 rand = "0.9.2"
 user-idle = "0.6.0"
+tray-icon = "0.21.3"
+tao = "0.34.5"
