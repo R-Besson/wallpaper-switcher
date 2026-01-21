@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Wallpaper Switcher",
+  "productName": "wallpaper-switcher",
   "version": "0.1.0",
   "identifier": "com.r-besson.wallpaper-switcher",
   "build": {
@@ -32,6 +32,11 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "perMachine"
+      }
+    }
   }
 }

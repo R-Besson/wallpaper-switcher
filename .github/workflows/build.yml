@@ -61,7 +61,9 @@ jobs:
                     libasound2-dev \
                     dbus-x11 \
                     pkg-config \
-                    patchelf
+                    patchelf \
+                    xdg-utils \
+                    libfuse2
 
             - name: install tauri-cli
               run: cargo install tauri-cli
@@ -71,9 +73,8 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   projectPath: "."
-                  includeCargo: true
                   tagName: v__VERSION__
-                  releaseName: "App v__VERSION__"
+                  releaseName: "Wallpaper Switcher v__VERSION__"
                   releaseDraft: true
                   prerelease: false
                   args: ${{ matrix.args }}
