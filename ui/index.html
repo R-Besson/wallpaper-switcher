@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Wallpaper Config</title>
+	<link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+	<div class="bg-mesh"></div>
+
+	<div class="app-container">
+		<div class="sidebar">
+			<nav class="nav-menu" id="nav-menu">
+				<div class="nav-item active" data-tab="sources">
+					<!-- https://iconify.design/ -->
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+						<path fill="currentColor"
+							d="M6.5 20q-2.275 0-3.887-1.575T1 14.575q0-1.95 1.175-3.475T5.25 9.15q.575-2.025 2.138-3.4T11 4.075v8.075L9.4 10.6L8 12l4 4l4-4l-1.4-1.4l-1.6 1.55V4.075q2.575.35 4.288 2.313T19 11q1.725.2 2.863 1.488T23 15.5q0 1.875-1.312 3.188T18.5 20z" />
+					</svg>
+					<span>Sources</span>
+				</div>
+				<div class="nav-item" data-tab="settings">
+					<!-- https://iconify.design/ -->
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+						<path fill="currentColor"
+							d="M9.954 2.21a10 10 0 0 1 4.09-.002A4 4 0 0 0 16 5.07a4 4 0 0 0 3.457.261A10 10 0 0 1 21.5 8.877a4 4 0 0 0-1.5 3.122c0 1.264.586 2.391 1.501 3.124a10 10 0 0 1-2.045 3.543a4 4 0 0 0-3.456.261a4 4 0 0 0-1.955 2.86a10 10 0 0 1-4.09.004A4 4 0 0 0 8 18.927a4 4 0 0 0-3.457-.26A10 10 0 0 1 2.5 15.121A4 4 0 0 0 4 11.999c0-1.264-.587-2.39-1.502-3.124a10 10 0 0 1 2.045-3.542A4 4 0 0 0 8 5.07a4 4 0 0 0 1.954-2.86M12 15a3 3 0 1 0 0-6a3 3 0 0 0 0 6" />
+					</svg>
+					<span>Settings</span>
+				</div>
+			</nav>
+		</div>
+
+		<div class="main-content">
+
+			<div id="tab-sources" class="page active">
+				<header class="page-header">
+					<div class="header-text">
+						<h1>Sources</h1>
+					</div>
+					<button class="btn btn-primary" id="btn-add-source">
+						<span>Add Source</span>
+					</button>
+				</header>
+
+				<div id="source-list" class="source-list"></div>
+
+				<div id="empty-state" class="empty-state">
+					<h3>No sources yet</h3>
+					<p>Add a keyword to start fetching wallpapers.</p>
+				</div>
+			</div>
+
+			<div id="tab-settings" class="page">
+				<header class="page-header">
+					<div class="header-text">
+						<h1>Settings</h1>
+					</div>
+				</header>
+
+				<div class="settings-grid">
+					<div class="card settings-card">
+						<div class="card-header">
+							<h3>Appearance</h3>
+						</div>
+						<div class="card-body">
+							<div class="setting-row">
+								<label>Accent Color</label>
+								<div class="color-wrapper" id="color-trigger">
+									<input type="color" id="theme-picker" value="#FFDDDD">
+									<div class="color-preview" id="color-preview"></div>
+									<span id="hex-val">#FFDDDD</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="card settings-card">
+						<div class="card-header">
+							<h3>System</h3>
+						</div>
+						<div class="card-body">
+							<div class="setting-row">
+								<div class="setting-info">
+									<label>Update Interval</label>
+									<span class="desc">Time between wallpaper changes</span>
+								</div>
+								<div class="input-wrapper">
+									<input type="text" id="delay-input" placeholder="1h, 30m, 5m, etc..">
+								</div>
+							</div>
+							<div class="divider"></div>
+							<div class="setting-row">
+								<div class="setting-info">
+									<label>Minimize to Tray</label>
+									<span class="desc">Keep running in background</span>
+								</div>
+								<label class="switch">
+									<input type="checkbox" id="tray-toggle">
+									<span class="slider"></span>
+								</label>
+							</div>
+							<div class="divider"></div>
+							<div class="setting-row">
+								<div class="setting-info">
+									<label>Run on Startup</label>
+									<span class="desc">Launch automatically when computer starts</span>
+								</div>
+								<label class="switch">
+									<input type="checkbox" id="startup-toggle">
+									<span class="slider"></span>
+								</label>
+							</div>
+						</div>
+					</div>
+
+					<div class="card settings-card">
+						<div class="card-header">
+							<h3>Unsplash API</h3>
+						</div>
+						<div class="card-body">
+							<div class="setting-col">
+								<label>Client Access Key</label>
+								<input type="text" id="api-key" class="full-input"
+									placeholder="Paste your API Key here...">
+								<span class="desc-sm">Required to fetch high-resolution images.</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="save-toast" class="toast">
+			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<polyline points="20 6 9 17 4 12"></polyline>
+			</svg>
+			<span>Configuration Saved</span>
+		</div>
+	</div>
+
+	<template id="tmpl-source-item">
+		<div class="source-item">
+			<div class="source-icon" title="Source: Unsplash">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+					<path fill="currentColor" d="M8.5 2.5v5h7v-5zM4 10.5v11h16v-11h-4.5v6h-7v-6z" />
+				</svg>
+			</div>
+			<div class="source-content">
+				<label class="source-label">Keyword</label>
+				<input type="text" class="source-input" placeholder="e.g. landscapes">
+			</div>
+			<div class="source-actions">
+				<label class="switch">
+					<input type="checkbox" class="source-toggle">
+					<span class="slider"></span>
+				</label>
+				<button class="btn-icon delete" title="Remove">
+					<!-- https://iconify.design/ -->
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+						<path fill="currentColor"
+							d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6z" />
+					</svg>
+				</button>
+			</div>
+		</div>
+	</template>
+
+	<script src="script.js"></script>
+</body>
+
+</html>

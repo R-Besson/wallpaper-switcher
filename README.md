@@ -1,38 +1,53 @@
+***
 # Wallpaper Switcher
 
-Wallpaper switcher that fetches fresh new wallpapers from the web with a user-specified delay. Makes sure the wallpapers are higher resolution than your monitors.\
-Currently uses Unsplash for source as they have the highest resolution wallpapers out there and filter user submitted wallpapers well.
+A modern desktop app that fetches high-res wallpapers from Unsplash based on groups of keywords at random. Built with **Rust** and **Tauri** for minimal resource usage and max performance. Mainly made for OLED monitors and TV's but anybody can use it.
+
+## Prerequisites
+
+1.  **Rust**: [https://rust-lang.org/tools/install/](https://rust-lang.org/tools/install/)
+2.  **System Dependencies**:
+    *   *Windows:* "C++ build tools" (via Visual Studio Build Tools).
+    *   *Linux:* `sudo apt install libwebkit2gtk-4.0-dev build-essential curl wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev`
+    *   *macOS:* Xcode Command Line Tools.
 
 ## Building
 
-Firstly install rust: https://rust-lang.org/tools/install/
-```bash
-git clone https://github.com/R-Besson/wallpaper-switcher.git
-cd wallpaper-switcher
-cargo build
-```
+1.  **Clone the repo:**
+    ```bash
+    git clone https://github.com/R-Besson/wallpaper-switcher.git
+    cd wallpaper-switcher
+    ```
+
+2.  **Install the Tauri CLI**:
+    ```bash
+    cargo install tauri-cli
+    ```
+
+3.  **Run in Development Mode:**
+    This will compile the app and open the window with dynamic reloading upon edits.
+    ```bash
+    cargo tauri dev
+    ```
+
+4.  **Build for Production:**
+    This creates an optimized binary and installer (EXE, DMG, or DEB depending on your OS).
+    ```bash
+    cargo tauri build
+    ```
 
 ## Usage
-1. [Make an unsplash account](https://unsplash.com/) and verify your email.
-1. [Make a new unsplash app.](https://unsplash.com/oauth/applications)
-2. Grab the `Access Key` and paste it in the `api-key` field below.
 
-### Example `config.json` file:
-```json
-{
-	"api_key": "YOUR_UNSPLASH_API_KEY",
-	"delay": "5m",
-	"sources": [
-		"nebula",
-		"macro nature",
-		"astrophotography",
-		"long exposure"
-	]
-}
-```
+### 1. Get an API Key
+1.  [Make an Unsplash account](https://unsplash.com/).
+2.  [Create a new Application](https://unsplash.com/oauth/applications).
+3.  Copy the **Access Key** and paste it in the settings.
 
-## Possible future features
-- User Interface?
-- Mosaic/Collage?
-- Separate pictures for each monitor?
-- More supported sources?
+## Future Plans
+- [x] Start-Up App
+- [x] System Tray
+- [x] **User Interface**
+- [ ] Other sources
+- [ ] Local file/folder support
+- [ ] Different wallpapers for each display
+- [ ] Mosaic/Collage mode
