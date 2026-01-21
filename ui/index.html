@@ -48,7 +48,7 @@
 
 				<div id="empty-state" class="empty-state">
 					<h3>No sources yet</h3>
-					<p>Add a keyword to start fetching wallpapers.</p>
+					<p>Add a source to start fetching wallpapers.</p>
 				</div>
 			</div>
 
@@ -121,10 +121,10 @@
 						</div>
 						<div class="card-body">
 							<div class="setting-col">
-								<label>Client Access Key</label>
+								<label>Access Key</label>
 								<input type="text" id="api-key" class="full-input"
-									placeholder="Paste your API Key here...">
-								<span class="desc-sm">Required to fetch high-resolution images.</span>
+									placeholder="Paste your API Access Key here...">
+								<span class="desc-sm">You can get one at <a href="https://unsplash.com/oauth/applications">https://unsplash.com/oauth/applications</span>
 							</div>
 						</div>
 					</div>
@@ -136,21 +136,22 @@
 			<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 				<polyline points="20 6 9 17 4 12"></polyline>
 			</svg>
-			<span>Configuration Saved</span>
+			<span>Saved</span>
 		</div>
 	</div>
 
 	<template id="tmpl-source-item">
 		<div class="source-item">
-			<div class="source-icon" title="Source: Unsplash">
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-					<path fill="currentColor" d="M8.5 2.5v5h7v-5zM4 10.5v11h16v-11h-4.5v6h-7v-6z" />
-				</svg>
-			</div>
+			<select class="source-select" title="Select Source">
+				<option value="unsplash">Unsplash</option>
+				<option value="wallhaven">Wallhaven</option>
+			</select>
+
 			<div class="source-content">
-				<label class="source-label">Keyword</label>
+				<label class="source-label">Keywords</label>
 				<input type="text" class="source-input" placeholder="e.g. landscapes">
 			</div>
+
 			<div class="source-actions">
 				<label class="switch">
 					<input type="checkbox" class="source-toggle">
@@ -167,7 +168,7 @@
 		</div>
 	</template>
 
-	<script src="script.js"></script>
+	<script src="script.js" type="module"></script>
 </body>
 
 </html>

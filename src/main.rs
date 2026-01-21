@@ -2,7 +2,7 @@
 
 use anyhow::{anyhow, Context, Result};
 use display_info::DisplayInfo;
-use rand::seq::IndexedRandom;
+use rand::{prelude::IteratorRandom, seq::IndexedRandom};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -19,7 +19,7 @@ use user_idle::UserIdle;
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 struct Source {
-	name: String,
+	query: String,
 	#[serde(default = "default_source_kind")]
 	#[serde(rename = "type")]
 	kind: String,
@@ -51,7 +51,7 @@ impl Default for Config {
 			minimize_to_tray: true,
 			run_on_startup: false,
 			sources: vec![Source {
-				name: "nature".into(),
+				query: "nature".into(),
 				kind: default_source_kind(),
 				enabled: true,
 			}],
@@ -69,6 +69,18 @@ struct UnsplashPhoto {
 #[derive(Deserialize, Debug)]
 struct UnsplashUrls {
 	raw: String,
+}
+
+#[derive(Deserialize, Debug)]
+struct WallhavenResponse {
+	data: Vec<WallhavenImage>,
+}
+
+#[derive(Deserialize, Debug)]
+struct WallhavenImage {
+	path: String,
+	dimension_x: u32,
+	dimension_y: u32,
 }
 
 struct AppState {
@@ -151,6 +163,71 @@ async fn download_and_set(client: &reqwest::Client, url: &str, path: &PathBuf) -
 	Ok(())
 }
 
+async fn fetch_unsplash(
+	client: &reqwest::Client,
+	keywords: &str,
+	api_key: &str,
+	min_w: u32,
+	min_h: u32,
+) -> Result<String> {
+	println!("//DEBUG// Fetching Unsplash: {}", keywords);
+	let auth_header = if api_key.starts_with("Client-ID") {
+		api_key.to_string()
+	} else {
+		format!("Client-ID {}", api_key)
+	};
+
+	let response = client
+		.get("https://api.unsplash.com/photos/random")
+		.query(&[("query", keywords), ("orientation", "landscape")])
+		.header("Authorization", auth_header)
+		.send()
+		.await?;
+
+	if !response.status().is_success() {
+		return Err(anyhow!("Unsplash API error: {}", response.status()));
+	}
+
+	let photo: UnsplashPhoto = response.json().await?;
+	if photo.width >= min_w && photo.height >= min_h {
+		Ok(photo.urls.raw)
+	} else {
+		Err(anyhow!("Image too small"))
+	}
+}
+
+async fn fetch_wallhaven(
+	client: &reqwest::Client,
+	query: &str,
+	min_w: u32,
+	min_h: u32,
+) -> Result<String> {
+	println!("//DEBUG// Fetching Wallhaven: {}", query);
+
+	let response = client
+		.get("https://wallhaven.cc/api/v1/search")
+		.query(&[
+			("q", query),
+			("sorting", "random"),
+			("atleast", &format!("{}x{}", min_w, min_h)),
+		])
+		.send()
+		.await?;
+
+	if !response.status().is_success() {
+		return Err(anyhow!("Wallhaven API error: {}", response.status()));
+	}
+
+	let json: WallhavenResponse = response.json().await?;
+
+	json.data
+		.iter()
+		.filter(|img| img.dimension_x >= min_w && img.dimension_y >= min_h)
+		.choose(&mut rand::rng())
+		.map(|img| img.path.clone())
+		.ok_or_else(|| anyhow!("No images found on Wallhaven"))
+}
+
 async fn update_wallpaper(
 	client: &reqwest::Client,
 	config: Config,
@@ -165,71 +242,33 @@ async fn update_wallpaper(
 		.max()
 		.unwrap_or((1920, 1080));
 
-	println!(
-		"//DEBUG// Target resolution (max display): {}x{}",
-		max_w, max_h
-	);
-
-	let enabled_sources: Vec<_> = config
-		.sources
-		.iter()
-		.filter(|s| s.enabled)
-		.map(|s| &s.name)
-		.collect();
-
-	println!("//DEBUG// Enabled sources: {:?}", enabled_sources);
+	let enabled_sources: Vec<_> = config.sources.iter().filter(|s| s.enabled).collect();
 
 	if enabled_sources.is_empty() {
-		println!("//ERROR// No sources enabled.");
 		return Err(anyhow!("No sources enabled"));
 	}
 
-	let mut photo: Option<UnsplashPhoto> = None;
+	for _ in 0..3 {
+		let source = enabled_sources.choose(&mut rand::rng()).context("Empty")?;
 
-	while photo.is_none() {
-		let query = enabled_sources.choose(&mut rand::rng()).context("Empty")?;
-		println!("//DEBUG// Selected query topic: {}", query);
+		let result = match source.kind.as_str() {
+			"wallhaven" => fetch_wallhaven(client, &source.query, max_w, max_h).await,
+			_ => fetch_unsplash(client, &source.query, &config.api_key, max_w, max_h).await,
+		};
 
-		println!("//DEBUG// Sending request to Unsplash API...");
-		let response = client
-			.get("https://api.unsplash.com/photos/random")
-			.query(&[("query", query.as_str()), ("orientation", "landscape")])
-			.header("Authorization", format!("Client-ID {}", config.api_key))
-			.send()
-			.await?;
-
-		println!(
-			"//DEBUG// Unsplash API Response Status: {}",
-			response.status()
-		);
-
-		if response.status().is_success() {
-			let candidate: UnsplashPhoto = response.json().await?;
-			println!(
-				"//DEBUG// Candidate photo found. Dimensions: {}x{}",
-				candidate.width, candidate.height
-			);
-
-			if candidate.width >= max_w && candidate.height >= max_h {
-				println!("//DEBUG// Candidate accepted.");
-				photo = Some(candidate);
-			} else {
-				println!("//DEBUG// Candidate rejected (too small). Retrying...");
-				println!("//DEBUG// Sleeping 5s before retry...");
-				time::sleep(Duration::from_secs(5)).await;
+		match result {
+			Ok(url) => {
+				download_and_set(client, &url, &image_path).await?;
+				return Ok(());
 			}
-		} else {
-			println!("//DEBUG// API request failed (non-200). Retrying...");
-			println!("//DEBUG// Sleeping 5s before retry...");
-			time::sleep(Duration::from_secs(5)).await;
+			Err(e) => {
+				eprintln!("//ERROR// Failed to fetch from {}: {}", source.kind, e);
+				time::sleep(Duration::from_secs(2)).await;
+			}
 		}
 	}
 
-	if let Some(p) = photo {
-		download_and_set(client, &p.urls.raw, &image_path).await?;
-	}
-
-	Ok(())
+	Err(anyhow!("Failed to update wallpaper after retries"))
 }
 
 async fn run_service(shared_config: Arc<Mutex<Config>>) {
@@ -242,7 +281,8 @@ async fn run_service(shared_config: Arc<Mutex<Config>>) {
 		println!("//DEBUG// Service loop tick.");
 		let config = shared_config.lock().await.clone();
 
-		if !config.api_key.is_empty() {
+		let has_enabled_sources = config.sources.iter().any(|s| s.enabled);
+		if has_enabled_sources {
 			let idle_seconds = UserIdle::get_time().map(|i| i.as_seconds()).unwrap_or(0);
 
 			println!("//DEBUG// User idle time: {} seconds.", idle_seconds);
@@ -257,7 +297,7 @@ async fn run_service(shared_config: Arc<Mutex<Config>>) {
 				println!("//DEBUG// User idle too long (> 600s). Skipping update.");
 			}
 		} else {
-			println!("//DEBUG// API Key missing. Skipping update.");
+			println!("//DEBUG// No sources enabled (or API key check removed). Skipping update.");
 		}
 
 		let delay = humantime::parse_duration(&config.delay).unwrap_or(Duration::from_secs(3600));
@@ -342,6 +382,7 @@ fn main() {
 
 	println!("//DEBUG// Building Tauri application...");
 	tauri::Builder::default()
+		.plugin(tauri_plugin_opener::init())
 		.plugin(tauri_plugin_autostart::init(
 			MacosLauncher::LaunchAgent,
 			None,

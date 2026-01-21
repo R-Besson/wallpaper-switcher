@@ -38,7 +38,7 @@ A modern desktop app that fetches high-res wallpapers from Unsplash based on gro
 
 ## Usage
 
-### 1. Get an API Key
+### Unsplash (recommended): Get an API Key
 1.  [Make an Unsplash account](https://unsplash.com/).
 2.  [Create a new Application](https://unsplash.com/oauth/applications).
 3.  Copy the **Access Key** and paste it in the settings.

@@ -75,12 +75,12 @@ const actions = {
 
 	updateSource(index, key, value) {
 		state.config.sources[index][key] = value;
-		if (key === 'name') this.handleSave();
+		if (key === 'query') this.handleSave();
 		else this.immediateSave();
 	},
 
 	addSource() {
-		state.config.sources.push({ name: "nature", kind: "unsplash", enabled: true });
+		state.config.sources.push({ query: "nature", type: "unsplash", enabled: true });
 		state.render();
 		this.immediateSave();
 
@@ -151,19 +151,20 @@ state.render = () => {
 
 	state.config.sources.forEach((src, idx) => {
 		const clone = tmpl.content.cloneNode(true);
-
 		const root = clone.querySelector('.source-item');
-		const icon = clone.querySelector('.source-icon');
+
+		const select = clone.querySelector('.source-select');
 		const input = clone.querySelector('.source-input');
 		const toggle = clone.querySelector('.source-toggle');
 		const delBtn = clone.querySelector('.delete');
 
 		if (src.enabled) root.classList.add('active-source');
 
-		icon.title = `Source: ${src.type || 'unsplash'}`;
+		select.value = src.type || 'unsplash';
+		select.onchange = (e) => actions.updateSource(idx, 'type', e.target.value);
 
-		input.value = src.name;
-		input.oninput = (e) => actions.updateSource(idx, 'name', e.target.value);
+		input.value = src.query;
+		input.oninput = (e) => actions.updateSource(idx, 'query', e.target.value);
 
 		toggle.checked = src.enabled;
 		toggle.onchange = (e) => actions.updateSource(idx, 'enabled', e.target.checked);
@@ -175,6 +176,7 @@ state.render = () => {
 
 	list.appendChild(fragment);
 };
+
 
 (async function init() {
 	try {
@@ -222,3 +224,18 @@ state.render = () => {
 		console.error("Init failed", err);
 	}
 })();
+
+const { openUrl } = window.__TAURI__.opener;
+
+document.addEventListener('click', async (e) => {
+	const target = e.target.closest('a');
+
+	if (target && target.href.startsWith('http')) {
+		e.preventDefault();
+		try {
+			await openUrl(target.href);
+		} catch (err) {
+			console.error('Failed to open URL:', err);
+		}
+	}
+});
