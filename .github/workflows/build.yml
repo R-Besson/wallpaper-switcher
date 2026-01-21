@@ -14,34 +14,25 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    # Windows AMD64
                     - platform: "windows-latest"
-                      args: ""
+                      args: "--target x86_64-pc-windows-msvc"
                       target: "x86_64-pc-windows-msvc"
 
-                    # Windows ARM64
                     - platform: "windows-latest"
                       args: "--target aarch64-pc-windows-msvc"
                       target: "aarch64-pc-windows-msvc"
 
-                    # Linux AMD64
                     - platform: "ubuntu-latest"
-                      args: ""
+                      args: "--target x86_64-unknown-linux-gnu"
                       target: "x86_64-unknown-linux-gnu"
 
-                    # Linux ARM64 (Uses native ARM runner - Public Repos Only)
                     - platform: "ubuntu-24.04-arm"
-                      args: ""
+                      args: "--target aarch64-unknown-linux-gnu"
                       target: "aarch64-unknown-linux-gnu"
 
         runs-on: ${{ matrix.platform }}
         steps:
             - uses: actions/checkout@v4
-
-            - name: setup node
-              uses: actions/setup-node@v4
-              with:
-                  node-version: lts/*
 
             - name: install Rust stable
               uses: dtolnay/rust-toolchain@stable
@@ -54,8 +45,8 @@ jobs:
                   sudo apt-get update
                   sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-            - name: install frontend dependencies
-              run: npm install
+            - name: install tauri-cli
+              run: cargo install tauri-cli --version 2.0.0-rc
 
             - uses: tauri-apps/tauri-action@v0
               env:
@@ -63,7 +54,7 @@ jobs:
               with:
                   tagName: app-v__VERSION__
                   releaseName: "App v__VERSION__"
-                  releaseBody: "See the assets to download this version."
                   releaseDraft: true
                   prerelease: false
+                  includeCargo: true
                   args: ${{ matrix.args }}
