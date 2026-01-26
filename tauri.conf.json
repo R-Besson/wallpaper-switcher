@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Wallpaper Switcher",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "com.r-besson.wallpaper-switcher",
   "build": {
     "beforeDevCommand": "",

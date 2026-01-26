@@ -6,8 +6,8 @@ const api = {
 
 	async get() {
 		if (!this.invoke) return {
-			api_key: "", delay: "1h", minimize_to_tray: true,
-			run_on_startup: false, theme_color: "#FFDDDD", sources: []
+			unsplash_api_key: "", delay: "1h", minimize_to_tray: true,
+			run_on_startup: false, theme_color: "#FFDDDD", sources: [], blacklist: []
 		};
 		return await this.invoke('get_config');
 	},
@@ -80,7 +80,7 @@ const actions = {
 	},
 
 	addSource() {
-		state.config.sources.push({ query: "nature", type: "unsplash", enabled: true });
+		state.config.sources.push({ query: "nature", type: "unsplash", enabled: true, weight: 10 });
 		state.render();
 		this.immediateSave();
 
@@ -201,7 +201,7 @@ state.render = () => {
 			};
 		};
 
-		bindInput('#api-key', 'api_key');
+		bindInput('#unsplash-api-key', 'unsplash_api_key');
 		bindInput('#delay-input', 'delay');
 		bindCheck('#tray-toggle', 'minimize_to_tray');
 		bindCheck('#startup-toggle', 'run_on_startup');
